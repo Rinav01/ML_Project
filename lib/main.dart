@@ -11,7 +11,6 @@ void main() {
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -38,6 +37,8 @@ class _MyHomePageState extends State<MyHomePage> {
   File? image;
   late ImagePicker imagePicker;
   late ImageLabeler labeler;
+  String results = "";
+
   @override
   void initState() {
     super.initState();
@@ -48,29 +49,28 @@ class _MyHomePageState extends State<MyHomePage> {
   }
 
   chooseImage() async {
-    XFile? selectedImage =
-        await imagePicker.pickImage(source: ImageSource.gallery);
+    XFile? selectedImage = await imagePicker.pickImage(source: ImageSource.gallery);
     if (selectedImage != null) {
-      performImageLabelling();
       setState(() {
         image = File(selectedImage.path);
       });
+      performImageLabelling();
     }
   }
 
   captureImage() async {
-    XFile? selectedImage =
-        await imagePicker.pickImage(source: ImageSource.camera);
+    XFile? selectedImage = await imagePicker.pickImage(source: ImageSource.camera);
     if (selectedImage != null) {
-      performImageLabelling();
       setState(() {
         image = File(selectedImage.path);
       });
+      performImageLabelling();
     }
   }
 
-  String results = "";
   performImageLabelling() async {
+    if (image == null) return;
+
     results = "";
     InputImage inputImage = InputImage.fromFile(image!);
 
@@ -78,15 +78,11 @@ class _MyHomePageState extends State<MyHomePage> {
 
     for (ImageLabel label in labels) {
       final String text = label.label;
-      final int index = label.index;
       final double confidence = label.confidence;
-      print(text + "   " + confidence.toString());
-      results += text + "  " + confidence.toStringAsFixed(2) + "\n";
+      results += "$text  ${confidence.toStringAsFixed(2)}\n";
     }
 
-    setState(() {
-      results;
-    });
+    setState(() {});
   }
 
   @override
@@ -108,12 +104,8 @@ class _MyHomePageState extends State<MyHomePage> {
                     )
                   : Image.file(image!),
               ElevatedButton(
-                onPressed: () {
-                  chooseImage();
-                },
-                onLongPress: () {
-                  captureImage();
-                },
+                onPressed: chooseImage,
+                onLongPress: captureImage,
                 child: const Text('Choose/Capture'),
               ),
               Text(results),
